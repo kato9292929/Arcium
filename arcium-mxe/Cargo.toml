@@ -1,0 +1,18 @@
+[package]
+name = "payment-verifier"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+arcis = { version = "0.4", features = ["mxe"] }
+arcium-sdk = { version = "0.4" }
+borsh = { version = "1.0", features = ["derive"] }
+solana-program = "1.18"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

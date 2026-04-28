@@ -1,0 +1,22 @@
+{
+  "name": "x402-private-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.91.8",
+    "hono": "^4.4.7"
+  },
+  "optionalDependencies": {
+    "@arcium-hq/arcium-js": "^0.4.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260426.1",
+    "typescript": "^5.5.3",
+    "wrangler": "^3.65.0"
+  }
+}
