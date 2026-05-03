@@ -4,7 +4,8 @@ import { useState, useCallback, useEffect } from "react";
 import type { DemoTriggerResponse, FeedEntry } from "@/lib/types";
 import { PrivacyProof } from "./PrivacyProof";
 
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://localhost:8787";
+// TODO: restore to process.env.NEXT_PUBLIC_GATEWAY_URL once env propagation is confirmed working
+const GATEWAY_URL = "https://shiny-system-4rq5rgw7qx4f7w9w-8787.app.github.dev";
 
 function PublicFeedRow({ entry }: { entry: FeedEntry & { type: "public" } }) {
   const tx = entry.data as DemoTriggerResponse["publicObservable"];
