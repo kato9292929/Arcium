@@ -6,10 +6,12 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 
+# Run: CLOUDFLARE_API_TOKEN=<token> npx wrangler kv namespace create PAYMENT_KV
+# Then paste the returned id below (use the same id for both fields)
 [[kv_namespaces]]
 binding = "PAYMENT_KV"
-id = "00000000000000000000000000000000"
-preview_id = "00000000000000000000000000000000"
+id = "REPLACE_WITH_KV_ID"
+preview_id = "REPLACE_WITH_KV_ID"
 
 [observability]
 enabled = true
