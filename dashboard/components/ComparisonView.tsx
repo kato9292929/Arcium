@@ -4,8 +4,8 @@ import { useState, useCallback, useEffect } from "react";
 import type { DemoTriggerResponse, FeedEntry } from "@/lib/types";
 import { PrivacyProof } from "./PrivacyProof";
 
-// TODO: restore to process.env.NEXT_PUBLIC_GATEWAY_URL once env propagation is confirmed working
-const GATEWAY_URL = "https://shiny-system-4rq5rgw7qx4f7w9w-8787.app.github.dev";
+// Empty string → all fetch calls use relative URLs (/api/…), same origin, zero CORS.
+const GATEWAY_URL = "";
 
 function PublicFeedRow({ entry }: { entry: FeedEntry & { type: "public" } }) {
   const tx = entry.data as DemoTriggerResponse["publicObservable"];
