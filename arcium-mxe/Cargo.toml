@@ -1,24 +1,12 @@
-# DESIGN REFERENCE ONLY — this manifest is illustrative and does not resolve.
-# The `arcis` / `arcium-sdk` crate names + versions below are placeholders that
-# match the made-up API in src/payment_verifier.rs, not real published crates.
-# `cargo build` / `arcium build` will fail. See src/payment_verifier.rs header
-# and https://github.com/arcium-hq/examples for the real toolchain and deps.
-
-[package]
-name = "payment-verifier"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-arcis = { version = "0.4", features = ["mxe"] }
-arcium-sdk = { version = "0.4" }
-borsh = { version = "1.0", features = ["derive"] }
-solana-program = "1.18"
+[workspace]
+members = ["programs/*", "encrypted-ixs"]
+resolver = "2"
 
 [profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+[profile.release.build-override]
 opt-level = 3
-lto = true
+incremental = false
 codegen-units = 1
