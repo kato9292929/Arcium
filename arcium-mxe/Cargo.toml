@@ -1,3 +1,9 @@
+# DESIGN REFERENCE ONLY — this manifest is illustrative and does not resolve.
+# The `arcis` / `arcium-sdk` crate names + versions below are placeholders that
+# match the made-up API in src/payment_verifier.rs, not real published crates.
+# `cargo build` / `arcium build` will fail. See src/payment_verifier.rs header
+# and https://github.com/arcium-hq/examples for the real toolchain and deps.
+
 [package]
 name = "payment-verifier"
 version = "0.1.0"

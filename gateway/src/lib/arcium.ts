@@ -1,37 +1,28 @@
 /**
- * Arcium SDK wrapper — MXE invocation with mock fallback.
+ * Arcium MXE wrapper.
  *
- * When ARCIUM_MXE_ID is absent (local dev / CI), all encryption and MXE
- * calls are replaced by deterministic mocks so the gateway remains fully
- * functional for demo purposes.
+ * ┌─ STATUS ──────────────────────────────────────────────────────────────────┐
+ * │ Only the MOCK path below is implemented and exercised. The "real" path is  │
+ * │ NOT wired up to the Arcium network — calling it throws NotImplemented.      │
+ * └────────────────────────────────────────────────────────────────────────────┘
  *
- * Privacy guarantee: sender wallet, transfer amount, and token mint are
- * encrypted with the Arcium cluster's public key *before* leaving this
- * module.  They never appear in logs, KV, or response bodies.
+ * Mock path (ARCIUM_MXE_ID absent or === "mock"):
+ *   Encryption and MXE execution are replaced by deterministic XOR-based mocks
+ *   so the gateway is fully functional for demos. This is NOT real cryptography
+ *   and provides NO privacy — it only simulates the shape of the real flow.
+ *
+ * Real path (a non-"mock" ARCIUM_MXE_ID is configured):
+ *   Intended to encrypt sender wallet, transfer amount, and token mint with the
+ *   Arcium cluster key and run the verification inside MPC. This is unimplemented.
+ *   The real Arcium TypeScript SDK is `@arcium-hq/client` (+ `@arcium-hq/reader`),
+ *   and real computations are asynchronous: the gateway queues a computation
+ *   on-chain and receives the result via callback/polling — there is no
+ *   synchronous request→response `executeMXE` call as sketched in the old stub.
+ *   See https://ts.arcium.com/ and https://docs.arcium.com/developers for the
+ *   actual client API and computation lifecycle.
  */
 
 import type { MXEVerifyRequest, MXEVerifyResponse } from "../types.js";
-
-// Lazy-loaded only when a real MXE_ID is configured.
-type ArciumClient = {
-  encrypt(data: Uint8Array): Promise<string>;
-  executeMXE(mxeId: string, inputs: Record<string, unknown>): Promise<{ output: { payment_valid: boolean }; computationId: string; clusterSignature: string }>;
-};
-
-let _client: ArciumClient | null = null;
-
-async function getClient(apiKey: string): Promise<ArciumClient> {
-  if (_client) return _client;
-
-  // Dynamic import so the Worker doesn't hard-fail when the SDK is absent.
-  try {
-    const { ArciumClient: AC } = await import("@arcium-hq/arcium-js");
-    _client = new AC({ apiKey }) as unknown as ArciumClient;
-    return _client;
-  } catch {
-    throw new Error("@arcium-hq/arcium-js not installed — set ARCIUM_MXE_ID=mock to use mock mode");
-  }
-}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -104,52 +95,42 @@ export interface ArciumVerifyOptions {
 }
 
 /**
- * Encrypt payment fields and invoke the Arcium MXE to get a single boolean.
- * In mock mode (ARCIUM_MXE_ID === "mock" or absent) this returns a
- * deterministic result driven by the amount comparison only.
+ * Verify a payment.
+ *
+ * Mock mode (ARCIUM_MXE_ID === "mock" or absent) returns a deterministic result
+ * driven by the amount comparison only — NO real encryption, NO real MPC.
+ *
+ * Any other ARCIUM_MXE_ID selects the real path, which is NOT implemented and
+ * throws. See the module header for what real Arcium integration requires.
  */
 export async function verifyPaymentViaMXE(
   opts: ArciumVerifyOptions,
 ): Promise<MXEVerifyResponse> {
   const isMock = !opts.mxeId || opts.mxeId === "mock";
 
+  if (!isMock) {
+    // ── Real path: NOT IMPLEMENTED ───────────────────────────────────────────
+    // Deliberately fail loudly instead of pretending to talk to Arcium.
+    // Implementing this requires `@arcium-hq/client`, an on-chain queued
+    // computation, and a callback/polling result flow (see module header).
+    throw new Error(
+      "Real Arcium MXE verification is not implemented. " +
+        "Set ARCIUM_MXE_ID=mock to run the gateway in mock mode. " +
+        "See https://docs.arcium.com/developers to implement the real path.",
+    );
+  }
+
   const senderBytes = pubkeyToBytes(opts.senderWallet);
   const amountBytes = u64ToBytes(opts.transferAmount);
   const mintBytes = pubkeyToBytes(opts.tokenMint);
 
-  if (isMock) {
-    const req: MXEVerifyRequest = {
-      encryptedSender: mockEncrypt(senderBytes),
-      encryptedAmount: mockEncrypt(amountBytes),
-      encryptedMint: mockEncrypt(mintBytes),
-      requiredAmount: opts.requiredAmount,
-      expectedRecipient: opts.expectedRecipient,
-      expectedMint: opts.expectedMint,
-    };
-    return mockExecuteMXE(req);
-  }
-
-  // Real path — encrypt with cluster public key then invoke MXE.
-  const client = await getClient(opts.apiKey);
-
-  const [encSender, encAmount, encMint] = await Promise.all([
-    client.encrypt(senderBytes),
-    client.encrypt(amountBytes),
-    client.encrypt(mintBytes),
-  ]);
-
-  const result = await client.executeMXE(opts.mxeId, {
-    encrypted_sender: encSender,
-    encrypted_amount: encAmount,
-    encrypted_mint: encMint,
-    required_amount: opts.requiredAmount,
-    expected_recipient: opts.expectedRecipient,
-    expected_mint: opts.expectedMint,
-  });
-
-  return {
-    valid: result.output.payment_valid,
-    computationId: result.computationId,
-    clusterSignature: result.clusterSignature,
+  const req: MXEVerifyRequest = {
+    encryptedSender: mockEncrypt(senderBytes),
+    encryptedAmount: mockEncrypt(amountBytes),
+    encryptedMint: mockEncrypt(mintBytes),
+    requiredAmount: opts.requiredAmount,
+    expectedRecipient: opts.expectedRecipient,
+    expectedMint: opts.expectedMint,
   };
+  return mockExecuteMXE(req);
 }

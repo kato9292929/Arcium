@@ -1,6 +1,15 @@
 # x402 Private Gateway
 
-Privacy-preserving API payment gateway built on the [x402 protocol](https://x402.org), using **Arcium's MPC network** to verify payments without revealing wallet addresses, payment amounts, or API access patterns on-chain.
+> ⚠️ **Status: mock mode demo.** This project currently runs in **mock mode** —
+> the "MPC" verification is a local **XOR-based simulation** (`ARCIUM_MXE_ID=mock`),
+> not real multi-party computation. **Real Arcium MPC integration is not yet
+> deployed or implemented.** The gateway and dashboard are fully functional as a
+> demo, but no payment is actually verified on the Arcium network. The Arcis MXE
+> program and the SDK "real" code path are design references, not working
+> integrations — see the notes throughout this README. Tracking real integration
+> as future work (Phase 2).
+
+Privacy-preserving API payment gateway built on the [x402 protocol](https://x402.org), designed to use **Arcium's MPC network** to verify payments without revealing wallet addresses, payment amounts, or API access patterns on-chain. _(MPC verification is currently mocked — see the status note above.)_
 
 ## The problem
 
@@ -69,7 +78,7 @@ Agent → 402 → Arcium MXE verifies (encrypted) → API access
 | Layer | Technology |
 |---|---|
 | Edge gateway | Cloudflare Workers + Hono.js |
-| MPC computation | Arcium SDK + Arcis (Rust DSL) |
+| MPC computation | Arcium SDK + Arcis (Rust DSL) — _planned; currently mocked (XOR simulation)_ |
 | Payment chain | Solana + USDC |
 | RPC / indexing | Helius Enhanced Transactions API |
 | Dashboard | Next.js 15 + React 19 |
@@ -79,23 +88,16 @@ Agent → 402 → Arcium MXE verifies (encrypted) → API access
 
 ### 1. Arcium MXE program
 
-```bash
-cd arcium-mxe
-
-# Install Arcis toolchain
-cargo install arcis-cli
-
-# Build the MXE program
-cargo build --release
-
-# Deploy to Arcium mainnet
-arcis deploy --program payment_verifier \
-             --network mainnet \
-             --keypair ~/.config/solana/id.json
-
-# Copy the MXE ID to gateway .env
-# ARCIUM_MXE_ID=<output from arcis deploy>
-```
+> **TODO — real Arcium integration is not implemented.** `arcium-mxe/src/payment_verifier.rs`
+> is a **design reference** written against an illustrative API; it does not
+> compile or deploy as-is, and there is no `arcis-cli` / `arcis deploy` command
+> (those do not exist). The real toolchain is **`arcup`** + the **`arcium` CLI**
+> (an Anchor wrapper) using `arcium build` / `arcium test`. For the correct
+> install and deploy steps, follow the official docs:
+> <https://docs.arcium.com/developers/installation>.
+>
+> Until that work is done, run the gateway in **mock mode** (`ARCIUM_MXE_ID=mock`),
+> which needs no Arcium deployment — skip to step 2.
 
 ### 2. Gateway
 
@@ -199,9 +201,14 @@ Fires a test payment through both the public and private flows simultaneously. U
 }
 ```
 
-## How the MXE works
+## How the MXE works (intended design)
 
-The Arcis program (`arcium-mxe/src/payment_verifier.rs`) defines a Multi-party eXecutable computation:
+> The snippet below is the **intended** Arcis program. `arcium-mxe/src/payment_verifier.rs`
+> is a design reference written against an illustrative API — it does not compile
+> or deploy as-is, and is **not** what runs in mock mode. See the file header and
+> <https://docs.arcium.com/developers/arcis> for the real API.
+
+The Arcis program (`arcium-mxe/src/payment_verifier.rs`) is intended to define a Multi-party eXecutable computation:
 
 ```rust
 #[mxe]
@@ -217,7 +224,7 @@ pub fn verify_payment(
 }
 ```
 
-The Arcium cluster holds shares of the decryption key. No single node can decrypt the inputs. The computation runs in a threshold MPC environment; only the final boolean is recombined and returned.
+Once deployed on Arcium, the cluster would hold shares of the decryption key so that no single node can decrypt the inputs, the computation would run in a threshold MPC environment, and only the final boolean would be recombined and returned. _(Not yet deployed — currently mocked.)_
 
 ## Security notes
 

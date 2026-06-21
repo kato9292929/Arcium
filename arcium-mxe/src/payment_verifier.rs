@@ -1,8 +1,26 @@
-/// x402 Private Gateway — Arcium MXE payment verification program.
+// ╔════════════════════════════════════════════════════════════════════════════╗
+// ║ STATUS: DESIGN REFERENCE — NOT A BUILDABLE / DEPLOYABLE IMPLEMENTATION.      ║
+// ║                                                                              ║
+// ║ This file documents the INTENDED MXE logic for payment verification. It is   ║
+// ║ written against an illustrative, made-up Arcis API (`#[mxe]`, `Encrypted<T>`,║
+// ║ `ArcisInput`, `ct_ge`, `arcis::testing::MockEncrypted`, etc.) and does NOT   ║
+// ║ match the real Arcis API. It will NOT compile, `arcium build`, `arcium test`,║
+// ║ or deploy to the Arcium network as-is. The `#[cfg(test)]` tests below are    ║
+// ║ likewise illustrative and are not runnable.                                  ║
+// ║                                                                              ║
+// ║ To build a real implementation, follow the official Arcis guide and the      ║
+// ║ canonical examples (e.g. the Voting / Coinflip programs) and port this logic ║
+// ║ onto the actual API and async (queued + callback) computation model:         ║
+// ║   • https://docs.arcium.com/developers/arcis                                  ║
+// ║   • https://github.com/arcium-hq/examples                                     ║
+// ╚════════════════════════════════════════════════════════════════════════════╝
+
+/// x402 Private Gateway — Arcium MXE payment verification program (design reference).
 ///
-/// This MXE computation verifies that a Solana USDC transfer is valid for a
-/// given API price **without revealing** the sender wallet, the exact amount,
-/// or any other private field to any observer (on-chain or off-chain).
+/// This MXE computation is intended to verify that a Solana USDC transfer is
+/// valid for a given API price **without revealing** the sender wallet, the
+/// exact amount, or any other private field to any observer (on-chain or
+/// off-chain).
 ///
 /// Privacy model
 /// ─────────────
@@ -94,7 +112,10 @@ pub fn verify_payment(
     }
 }
 
-// ── Unit tests (run outside MPC with mock Encrypted<T> shims) ───────────────
+// ── Illustrative unit tests ─────────────────────────────────────────────────
+// These sketch the intended behaviour against the made-up Arcis API above.
+// They are NOT runnable as written (`arcis::testing::MockEncrypted` is not a
+// real API) and exist only to document expected pass/fail cases.
 
 #[cfg(test)]
 mod tests {
