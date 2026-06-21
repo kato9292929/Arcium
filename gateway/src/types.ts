@@ -13,6 +13,12 @@ export interface Env {
   PAYMENT_WALLET_ADDRESS: string;
   CMC_API_KEY: string;
 
+  // M5 (off the hot path): URL of the Node "charger" service that runs the real
+  // Arcium round-trip via arcium-mxe/client. The Worker only delegates to it and
+  // consumes the boolean result — it never imports anchor/@arcium-hq/client.
+  // Optional; absent ⇒ real path is unavailable (mock mode still works).
+  ARCIUM_CHARGER_URL?: string;
+
   // Vars (set in wrangler.toml)
   USDC_MINT: string;
 }

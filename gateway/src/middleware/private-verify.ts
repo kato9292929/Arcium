@@ -74,6 +74,8 @@ export async function privateVerify(
       requiredAmount: config.priceBaseUnits,
       expectedRecipient: c.env.PAYMENT_WALLET_ADDRESS,
       expectedMint: c.env.USDC_MINT,
+      // M5 (off the hot path): real path delegates to this Node charger service.
+      chargerUrl: c.env.ARCIUM_CHARGER_URL,
     });
   } catch (err) {
     // If MXE call fails, reverse the replay mark so the client can retry.

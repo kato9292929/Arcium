@@ -54,10 +54,13 @@ pattern stay encrypted.
 - [ ] `arcium deploy` to devnet (`-ud`, cluster offset + keypair-path from docs).
 - [ ] Init the four comp defs; confirm one `charge` finalizes via callback on devnet.
 
-### M5 — gateway
-- [ ] Replace the `NotImplemented` real path in `../gateway/src/lib/arcium.ts` with the
-      `@arcium-hq/client` flow (getMXEPublicKey → ECDH → RescueCipher → queue → await → event).
-- [ ] Wire the off-hot-path model; keep `ARCIUM_MXE_ID=mock` working.
+### M5 — gateway (independent module + thin Worker)
+- [x] Independent Node module `client/x402-arcium-client.ts` (encrypt→queue→finalize→decrypt,
+      written from `tests/x402_gateway.ts`) — **draft, build-unverified**.
+- [x] Worker stays thin: `../gateway/src/lib/arcium.ts` real path delegates to the charger
+      service (`ARCIUM_CHARGER_URL`); mock (`ARCIUM_MXE_ID=mock`) still default.
+- [ ] After M3/M4: resolve `target/types/x402_gateway`, run `client/charger-server.example.ts`
+      against devnet, confirm the 402 flow end-to-end, finalize the charger contract.
 
 Only after M3+M4 are green should the README status banners (root + here) move to
 "devnet: real MPC" (M6).
